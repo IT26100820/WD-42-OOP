@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend REST API & Persistence Testing Dashboard</title>
+    <link rel="stylesheet" href="/css/test-styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="test-header">
+        <div class="header-content">
+            <div class="header-title-group">
+                <span class="terminal-badge">DEV CONSOLE</span>
+                <h1>Review Module &bull; Backend Testing Dashboard</h1>
+                <p class="header-subtitle">Verify REST Endpoints, HTTP Status Codes, Validations, and File Persistence (<code>data/reviews.json</code>)</p>
+            </div>
+            <div class="header-actions">
+                <div id="connectionStatusBadge" class="status-badge status-checking">
+                    <span class="status-dot"></span>
+                    <span id="connectionStatusText">Checking Connection...</span>
+                </div>
+                <button id="pingBackendBtn" class="btn btn-sm btn-outline">⚡ Ping Backend</button>
+                <a href="/" class="btn btn-sm btn-customer-ui">📖 Open Customer UI</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard Grid -->
+    <main class="dashboard-container">
+        <!-- Left Panel: API Operations -->
+        <section class="operations-panel">
+            <!-- Quick Predefined IDs -->
+            <div class="panel-box">
+                <h3 class="box-title">Development Test Context</h3>
+                <div class="test-context-grid">
+                    <div>
+                        <span class="context-label">Sample Books:</span>
+                        <div class="quick-chips" id="bookChips">
+                            <span class="chip" data-book="BK-101">BK-101 (Clean Code)</span>
+                            <span class="chip" data-book="BK-102">BK-102 (Pragmatic Prog.)</span>
+                            <span class="chip" data-book="BK-103">BK-103 (Effective Java)</span>
+                            <span class="chip" data-book="BK-104">BK-104 (Design Patterns)</span>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="context-label">Sample Customers:</span>
+                        <div class="quick-chips" id="customerChips">
+                            <span class="chip" data-customer="CUST-001">CUST-001 (Alice)</span>
+                            <span class="chip" data-customer="CUST-002">CUST-002 (Bob)</span>
+                            <span class="chip" data-customer="CUST-003">CUST-003 (Charlie)</span>
+                            <span class="chip" data-customer="CUST-004">CUST-004 (Diana)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Operation Tabs -->
+            <div class="panel-box tabs-box">
+                <div class="tab-headers">
+                    <button class="tab-btn active" data-tab="tab-create">1. Create Review (POST)</button>
+                    <button class="tab-btn" data-tab="tab-read">2. Read &amp; Filter (GET)</button>
+                    <button class="tab-btn" data-tab="tab-update">3. Update (PUT)</button>
+                    <button class="tab-btn" data-tab="tab-delete">4. Delete (DELETE)</button>
+                </div>
+
+                <!-- Tab 1: Create Review -->
+                <div id="tab-create" class="tab-content active">
+                    <form id="testCreateForm">
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label class="field-label">Book ID <span class="req">*</span></label>
+                                <input type="text" id="createBookId" class="input-field" value="BK-101" required>
+                            </div>
+                            <div class="form-col">
+                                <label class="field-label">Customer ID <span class="req">*</span></label>
+                                <input type="text" id="createCustomerId" class="input-field" value="CUST-004" required>
+                            </div>
+                            <div class="form-col">
+                                <label class="field-label">Rating (1-5) <span class="req">*</span></label>
+                                <input type="number" id="createRating" class="input-field" value="5" min="1" max="5" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-col full">
+                                <label class="field-label">Comment (Max 1000) <span class="req">*</span></label>
+                                <textarea id="createComment" class="input-field" rows="3" required>Superb explanation of clean code concepts and refactoring techniques.</textarea>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">🚀 Send POST /api/reviews</button>
+                    </form>
+                </div>
+
+                <!-- Tab 2: Read & Filter -->
+                <div id="tab-read" class="tab-content">
+                    <div class="read-subgroup">
+                        <label class="field-label">Fetch All Reviews (with optional filters):</label>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <input type="text" id="filterBookId" class="input-field" placeholder="Book ID (e.g. BK-101)">
+                            </div>
+                            <div class="form-col">
+                                <select id="filterRating" class="input-field">
+                                    <option value="">Any Rating</option>
+                                    <option value="5">5 Stars</option>
+                                    <option value="4">4 Stars</option>
+                                    <option value="3">3 Stars</option>
+                                    <option value="2">2 Stars</option>
+                                    <option value="1">1 Star</option>
+                                </select>
+                            </div>
+                            <div class="form-col">
+                                <select id="filterSort" class="input-field">
+                                    <option value="newest">Sort: Newest</option>
+                                    <option value="oldest">Sort: Oldest</option>
+                                    <option value="highest_rating">Sort: Highest Rating</option>
+                                    <option value="lowest_rating">Sort: Lowest Rating</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button id="btnFetchAll" class="btn btn-secondary btn-block">📥 Send GET /api/reviews</button>
+                    </div>
+
+                    <hr class="divider">
+
+                    <div class="read-subgroup">
+                        <label class="field-label">Fetch Single Review by ID:</label>
+                        <div class="form-row">
+                            <div class="form-col" style="flex:2;">
+                                <input type="text" id="fetchSingleId" class="input-field" placeholder="e.g. REV-1001" value="REV-1001">
+                            </div>
+                            <div class="form-col" style="flex:1;">
+                                <button id="btnFetchSingle" class="btn btn-secondary btn-block">🔍 Send GET /api/reviews/{id}</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="divider">
+
+                    <div class="read-subgroup">
+                        <label class="field-label">Fetch Book Rating Summary:</label>
+                        <div class="form-row">
+                            <div class="form-col" style="flex:2;">
+                                <input type="text" id="fetchSummaryBookId" class="input-field" placeholder="e.g. BK-101" value="BK-101">
+                            </div>
+                            <div class="form-col" style="flex:1;">
+                                <button id="btnFetchSummary" class="btn btn-secondary btn-block">📊 Send GET /api/reviews/book/{id}/summary</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Update Review -->
+                <div id="tab-update" class="tab-content">
+                    <form id="testUpdateForm">
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label class="field-label">Review ID to Update <span class="req">*</span></label>
+                                <input type="text" id="updateReviewId" class="input-field" value="REV-1001" required>
+                            </div>
+                            <div class="form-col">
+                                <label class="field-label">Requesting Customer <span class="req">*</span></label>
+                                <input type="text" id="updateCustomerId" class="input-field" value="CUST-001" required>
+                                <small class="field-hint">Must match owner or be 'admin'.</small>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label class="field-label">Book ID</label>
+                                <input type="text" id="updateBookId" class="input-field" value="BK-101" required>
+                            </div>
+                            <div class="form-col">
+                                <label class="field-label">Updated Rating (1-5) <span class="req">*</span></label>
+                                <input type="number" id="updateRating" class="input-field" value="4" min="1" max="5" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-col full">
+                                <label class="field-label">Updated Comment <span class="req">*</span></label>
+                                <textarea id="updateComment" class="input-field" rows="3" required>Updated comment: The book is solid and informative after second reading.</textarea>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-warning btn-block">✏️ Send PUT /api/reviews/{id}</button>
+                    </form>
+                </div>
+
+                <!-- Tab 4: Delete Review -->
+                <div id="tab-delete" class="tab-content">
+                    <form id="testDeleteForm">
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label class="field-label">Review ID to Delete <span class="req">*</span></label>
+                                <input type="text" id="deleteReviewId" class="input-field" placeholder="e.g. REV-1005" value="REV-1005" required>
+                            </div>
+                            <div class="form-col">
+                                <label class="field-label">Requesting Customer <span class="req">*</span></label>
+                                <input type="text" id="deleteCustomerId" class="input-label input-field" value="CUST-004" required>
+                                <small class="field-hint">Must match owner or be 'admin'.</small>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-danger btn-block">🗑️ Send DELETE /api/reviews/{id}</button>
+                    </form>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Right Panel: Live Response Inspector & State Monitor -->
+        <section class="inspector-panel">
+            <div class="panel-box inspector-box">
+                <div class="inspector-header">
+                    <h3 class="box-title">Live Backend Response Inspector</h3>
+                    <div class="status-indicator-group">
+                        <span class="latency-badge" id="latencyBadge">Latency: -- ms</span>
+                        <span class="http-status-badge status-init" id="httpStatusBadge">HTTP --</span>
+                    </div>
+                </div>
+
+                <!-- Endpoint & Method Details -->
+                <div class="request-summary-bar">
+                    <span class="req-method" id="lastReqMethod">GET</span>
+                    <span class="req-url" id="lastReqUrl">/api/reviews</span>
+                </div>
+
+                <!-- Formatted JSON Viewer -->
+                <div class="response-viewer-container">
+                    <div class="viewer-actions">
+                        <span class="viewer-label">Raw Backend JSON Payload:</span>
+                        <button id="copyJsonBtn" class="btn-copy">📋 Copy JSON</button>
+                    </div>
+                    <pre class="json-code-block"><code id="rawResponseCode">Waiting for request execution...</code></pre>
+                </div>
+            </div>
+
+            <!-- Current Persistent Records in data/reviews.json -->
+            <div class="panel-box storage-box">
+                <div class="box-header-row">
+                    <div>
+                        <h3 class="box-title">Persistent File Storage Records (<code>data/reviews.json</code>)</h3>
+                        <span class="record-counter" id="recordCounter">0 records loaded</span>
+                    </div>
+                    <button id="reloadStorageBtn" class="btn btn-sm btn-secondary">🔄 Reload All</button>
+                </div>
+
+                <div class="records-table-container">
+                    <table class="records-table" id="recordsTable">
+                        <thead>
+                            <tr>
+                                <th>Review ID</th>
+                                <th>Book</th>
+                                <th>Customer</th>
+                                <th>Rating</th>
+                                <th>Comment</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordsTableBody">
+                            <tr>
+                                <td colspan="7" class="text-center">Loading stored records...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <script src="/js/review-test.js"></script>
+</body>
+</html>
