@@ -1,0 +1,4 @@
+com\bookstore\review\controller\ReviewControllerTest.class
+com\bookstore\review\repository\JsonFileReviewRepositoryTest.class
+com\bookstore\review\model\ReviewTest.class
+com\bookstore\review\service\ReviewServiceTest.class
